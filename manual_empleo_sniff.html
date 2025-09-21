@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual de Empleo - Sniff: Analizador de Paquetes de Red</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            color: white;
+            padding: 30px 0;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5em;
+        }
+
+        header p {
+            margin: 10px 0 0 0;
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        nav {
+            background-color: #34495e;
+            padding: 10px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        nav ul li {
+            margin: 0 15px;
+        }
+
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        nav ul li a:hover {
+            background-color: #2c3e50;
+        }
+
+        section {
+            background: white;
+            margin: 20px 0;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        section h2 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        section h3 {
+            color: #34495e;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+
+        .code-block {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+        }
+
+        .terminal-output {
+            background-color: #1e272e;
+            color: #10ac84;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .warning {
+            background-color: #f39c12;
+            color: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            border-left: 4px solid #e67e22;
+        }
+
+        .info {
+            background-color: #3498db;
+            color: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            border-left: 4px solid #2980b9;
+        }
+
+        .success {
+            background-color: #27ae60;
+            color: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            border-left: 4px solid #229954;
+        }
+
+        .error {
+            background-color: #e74c3c;
+            color: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            border-left: 4px solid #c0392b;
+        }
+
+        .script-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .script-card {
+            border: 2px solid #ecf0f1;
+            border-radius: 8px;
+            padding: 20px;
+            background-color: #fff;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .script-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        .script-card h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            padding: 5px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .feature-list li:before {
+            content: "✓";
+            color: #27ae60;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+
+        .step-list {
+            counter-reset: step-counter;
+        }
+
+        .step-list li {
+            counter-increment: step-counter;
+            margin-bottom: 10px;
+            padding-left: 30px;
+            position: relative;
+        }
+
+        .step-list li:before {
+            content: counter(step-counter);
+            background: #3498db;
+            color: white;
+            font-weight: bold;
+            padding: 2px 8px;
+            border-radius: 50%;
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        table th, table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        table th {
+            background-color: #f8f9fa;
+            color: #2c3e50;
+        }
+
+        table tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .footer {
+            background-color: #34495e;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            margin-top: 40px;
+        }
+
+        @media (max-width: 768px) {
+            nav ul {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            nav ul li {
+                margin: 5px 0;
+            }
+
+            .script-overview {
+                grid-template-columns: 1fr;
+            }
+
+            header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>📡 Sniff: Analizador de Paquetes de Red</h1>
+            <p>Manual de Empleo Completo</p>
+        </div>
+    </header>
+
+    <nav>
+        <div class="container">
+            <ul>
+                <li><a href="#introduccion">Introducción</a></li>
+                <li><a href="#requisitos">Requisitos</a></li>
+                <li><a href="#instalacion">Instalación</a></li>
+                <li><a href="#scripts">Scripts</a></li>
+                <li><a href="#uso">Uso</a></li>
+                <li><a href="#troubleshooting">Solución Problemas</a></li>
+                <li><a href="#configuracion">Configuración</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <section id="introduccion">
+            <h2>🎯 Introducción</h2>
+            <p>Sniff es una herramienta avanzada de análisis de paquetes de red desarrollada en Python que permite capturar, almacenar y organizar tráfico de red para análisis forense detallado. El proyecto consta de tres componentes principales que ofrecen tanto interfaces gráficas como de línea de comandos.</p>
+
+            <div class="script-overview">
+                <div class="script-card">
+                    <h3>🔍 sniff.py</h3>
+                    <p>Aplicación principal de captura en tiempo real con interfaz gráfica.</p>
+                    <ul class="feature-list">
+                        <li>Captura de paquetes en vivo</li>
+                        <li>Soporte multi-interfaz</li>
+                        <li>Almacenamiento dual (MongoDB + PCAP)</li>
+                        <li>Interfaz gráfica PySide6</li>
+                    </ul>
+                </div>
+
+                <div class="script-card">
+                    <h3>📊 ordenar_paquetes.py</h3>
+                    <p>Analizador gráfico para organizar paquetes almacenados.</p>
+                    <ul class="feature-list">
+                        <li>Múltiples métodos de ordenamiento</li>
+                        <li>Filtrado avanzado por IP</li>
+                        <li>Resolución DNS automática</li>
+                        <li>Análisis conversacional</li>
+                    </ul>
+                </div>
+
+                <div class="script-card">
+                    <h3>⚡ ordenar_paquetes_sin_entorno_grafico.py</h3>
+                    <p>Versión de línea de comandos para procesamiento automatizado.</p>
+                    <ul class="feature-list">
+                        <li>Procesamiento por lotes</li>
+                        <li>Generación automática de estadísticas</li>
+                        <li>Exportación a JSON</li>
+                        <li>Optimizado para servidores</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="requisitos">
+            <h2>⚙️ Requisitos del Sistema</h2>
+
+            <h3>Software Requerido</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Componente</th>
+                        <th>Versión Mínima</th>
+                        <th>Descripción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Python</td>
+                        <td>3.7+</td>
+                        <td>Lenguaje de programación principal</td>
+                    </tr>
+                    <tr>
+                        <td>MongoDB</td>
+                        <td>4.0+</td>
+                        <td>Base de datos para almacenamiento de paquetes</td>
+                    </tr>
+                    <tr>
+                        <td>Sistema Operativo</td>
+                        <td>Linux/MacOS/Windows</td>
+                        <td>Múltiples plataformas soportadas</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Dependencias Python</h3>
+            <div class="code-block">
+pip install PySide6>=6.0.0    # Framework de interfaz gráfica<br>
+pip install scapy>=2.4.0     # Biblioteca de manipulación de paquetes<br>
+pip install pymongo>=4.0.0   # Driver para MongoDB
+            </div>
+
+            <div class="warning">
+                <strong>⚠️ IMPORTANTE:</strong> Para captura de paquetes en Linux, necesitarás permisos de administrador y configurar las capacidades de red apropiadas.
+            </div>
+        </section>
+
+        <section id="instalacion">
+            <h2>📦 Instalación y Configuración</h2>
+
+            <h3>Paso 1: Instalación de MongoDB</h3>
+            <div class="info">
+                MongoDB es requerido para almacenar los paquetes capturados. Instala la versión Community Server gratuita.
+            </div>
+
+            <h4>Ubuntu/Debian:</h4>
+            <div class="code-block">
+sudo apt update<br>
+sudo apt install -y mongodb<br>
+sudo systemctl start mongodb<br>
+sudo systemctl enable mongodb
+            </div>
+
+            <h4>CentOS/RHEL:</h4>
+            <div class="code-block">
+sudo yum install -y mongodb<br>
+sudo systemctl start mongod<br>
+sudo systemctl enable mongod
+            </div>
+
+            <h4>MacOS:</h4>
+            <div class="code-block">
+brew install mongodb-community<br>
+brew services start mongodb-community
+            </div>
+
+            <h4>Windows:</h4>
+            <p>Descarga el instalador MSI desde <a href="https://www.mongodb.com/try/download/community">mongodb.com</a></p>
+
+            <h3>Paso 2: Clonación del Proyecto</h3>
+            <div class="code-block">
+cd /home/nito/Documentos/desarrollo/python<br>
+git clone https://github.com/bgonpin/sniff.git<br>
+cd sniff
+            </div>
+
+            <h3>Paso 3: Configuración del Entorno Virtual</h3>
+            <div class="code-block">
+python3 -m venv venv<br>
+source venv/bin/activate  # Linux/Mac<br>
+# En Windows: venv\Scripts\activate<br>
+pip install --upgrade pip
+            </div>
+
+            <h3>Paso 4: Instalación de Dependencias</h3>
+            <div class="code-block">
+pip install pyside6 scapy pymongo
+            </div>
+
+            <h3>Paso 5: Configuración de Permisos (Linux)</h3>
+            <div class="warning">
+                Para capturar paquetes, Python necesita acceso a sockets raw. Configura las capacidades de red apropiadas.
+            </div>
+            <div class="code-block">
+sudo setcap cap_net_raw=eip $(which python3)<br>
+# Si usas venv, ejecuta desde el directorio del proyecto:<br>
+sudo setcap cap_net_raw=eip venv/bin/python3
+            </div>
+
+            <h3>Paso 6: Verificación de Instalación</h3>
+            <div class="code-block">
+python3 -c "import PySide6.QtWidgets; import scapy.all; import pymongo; print('✓ Todas las dependencias instaladas correctamente')"
+            </div>
+
+            <div class="success">
+                <strong>✅ Verificación de MongoDB:</strong>
+                <div class="code-block">
+mongosh  # o mongo en versiones anteriores<br>
+use network_sniffing<br>
+db.packets.find().limit(1)
+                </div>
+            </div>
+        </section>
+
+        <section id="scripts">
+            <h2>📝 Documentación de Scripts</h2>
+
+            <h3>1. sniff.py - Capturador de Paquetes Principal</h3>
+            <div class="info">
+                <strong>Función:</strong> Captura paquetes de red en tiempo real y los almacena tanto en MongoDB como en archivos PCAP.
+            </div>
+
+            <h4>Características Técnicas:</h4>
+            <ul class="feature-list">
+                <li>Uso de AsyncSniffer de Scapy para captura asíncrona</li>
+                <li>Procesamiento por lotes de 1000 paquetes para optimización</li>
+                <li>Rotación automática de archivos PCAP con timestamps</li>
+                <li>Interfaz gráfica basada en QThread para evitar bloqueo de UI</li>
+                <li>Manejo de excepciones para robustez del sistema</li>
+            </ul>
+
+            <h4>Clases Principales:</h4>
+            <ul>
+                <li><strong>SnifferThread:</strong> Maneja la captura en un hilo separado</li>
+                <li><strong>SniffApp:</strong> Interfaz gráfica principal</li>
+                <li><strong>packet_to_dict:</strong> Conversión de paquetes Scapy a documentos MongoDB</li>
+            </ul>
+
+            <h3>2. ordenar_paquetes.py - Analizador Gráfico</h3>
+            <div class="info">
+                <strong>Función:</strong> Analiza y organiza paquetes almacenados en MongoDB con interfaz gráfica completa.
+            </div>
+
+            <h4>Métodos de Ordenamiento:</h4>
+            <ul class="feature-list">
+                <li><strong>sort_by_timestamp():</strong> Orden cronológico por tiempo de captura</li>
+                <li><strong>sort_by_tcp_sequence():</strong> Ordenamiento por números de secuencia TCP</li>
+                <li><strong>sort_by_conversation():</strong> Agrupación por conversaciones bidireccionales</li>
+            </ul>
+
+            <h4>Funcionalidades Avanzadas:</h4>
+            <ul class="feature-list">
+                <li>Filtrado dinámico por IPs de origen y destino</li>
+                <li>Resolución DNS automática con caché</li>
+                <li>Visualización de estadísticas protocolarias</li>
+                <li>Exportación de resultados ordenados</li>
+            </ul>
+
+            <h3>3. ordenar_paquetes_sin_entorno_grafico.py - Versión CLI</h3>
+            <div class="info">
+                <strong>Función:</strong> Procesamiento por lotes de paquetes sin interfaz gráfica, ideal para servidores y automatización.
+            </div>
+
+            <h4>Flujo de Ejecución Automático:</h4>
+            <ol class="step-list">
+                <li>Carga de paquetes desde MongoDB</li>
+                <li>Generación de estadísticas base</li>
+                <li>Ordenamiento por timestamp</li>
+                <li>Ordenamiento por secuencia TCP</li>
+                <li>Ordenamiento conversacional</li>
+                <li>Exportación a JSON</li>
+            </ol>
+        </section>
+
+        <section id="uso">
+            <h2>🚀 Guía de Uso</h2>
+
+            <h3>Uso Básico - Captura de Paquetes</h3>
+            <div class="code-block">
+cd /ruta/a/sniff<br>
+source venv/bin/activate<br>
+python3 sniff.py
+            </div>
+
+            <ol class="step-list">
+                <li>Seleccionar interfaz de red del listado desplegable</li>
+                <li>Hacer clic en "Start Sniffing"</li>
+                <li>Observar los paquetes en tiempo real en el área de texto</li>
+                <li>Hacer clic en "Stop Sniffing" cuando se termine</li>
+            </ol>
+
+            <h3>Análisis con Interfaz Gráfica</h3>
+            <div class="code-block">
+python3 ordenar_paquetes.py
+            </div>
+
+            <ol class="step-list">
+                <li>Clic en "Load Packets from MongoDB"</li>
+                <li>Filtrar opcionalmente por IPs (campos opcionales)</li>
+                <li>Clic en "Filter and Display Conversations"</li>
+                <li>Ver resultados organizados por conversación</li>
+            </ol>
+
+            <h3>Procesamiento Automatizado (CLI)</h3>
+            <div class="code-block">
+python3 ordenar_paquetes_sin_entorno_grafico.py
+            </div>
+
+            <p>Este script procesa automáticamente todos los paquetes:</p>
+            <div class="code-block">
+--- Estadísticas ---<br>
+Total de paquetes: 2500<br>
+Paquetes TCP: 1800<br>
+Protocolos encontrados:<br>
+  TCP: 1800<br>
+  UDP: 650<br>
+  ICMP: 50
+            </div>
+
+            <h3>Ejemplo de Salida de Diálogo TCP</h3>
+            <div class="terminal-output">
+Conversación: 192.168.1.100:54321 <-> github.com:443<br>
+  1. SEQ: 1000 [SYN] envía host cliente<br>
+  2. SEQ: 2000 [SYN,ACK] responde servidor<br>
+  3. SEQ: 1001 [ACK] confirma cliente<br>
+  4. SEQ: 1002 [ACK] envía datos cliente<br>
+  5. SEQ: 2001 [ACK] confirma y envía respuesta servidor
+            </div>
+        </section>
+
+        <section id="troubleshooting">
+            <h2>🔧 Solución de Problemas</h2>
+
+            <h3>Problema 1: "Permission denied" al iniciar captura</h3>
+            <div class="error">
+                <strong>Error:</strong> No se pueden capturar paquetes sin permisos administrativos.
+            </div>
+            <div class="code-block">
+# Solución - Otorgar capacidades a Python:<br>
+sudo setcap cap_net_raw=eip venv/bin/python3<br>
+<br>
+# Verificar:<br>
+getcap venv/bin/python3
+            </div>
+
+            <h3>Problema 2: "Connection refused" con MongoDB</h3>
+            <div class="error">
+                <strong>Error:</strong> MongoDB no está ejecutándose o no acepta conexiones.
+            </div>
+            <div class="code-block">
+# Verificar estado del servicio:<br>
+sudo systemctl status mongod<br>
+<br>
+# Iniciar si está parado:<br>
+sudo systemctl start mongod<br>
+<br>
+# Verificar conectividad:<br>
+mongosh --eval "db.runCommand('ping')"
+            </div>
+
+            <h3>Problema 3: "ModuleNotFoundError" para dependencias</h3>
+            <div class="error">
+                <strong>Error:</strong> Falta alguna dependencia de Python.
+            </div>
+            <div class="code-block">
+# Asegurarse de usar el entorno virtual:<br>
+source venv/bin/activate<br>
+<br>
+# Reinstalar dependencias:<br>
+pip install --force-reinstall pyside6 scapy pymongo
+            </div>
+
+            <h3>Problema 4: No se muestran interfaces de red</h3>
+            <div class="error">
+                <strong>Error:</strong> Scapy no puede detectar interfaces disponibles.
+            </div>
+            <div class="code-block">
+# Verificar interfaces disponibles:<br>
+python3 -c "from scapy.all import get_if_list; print(get_if_list())"<br>
+<br>
+# Ejecutar como administrador:<br>
+sudo python3 sniff.py
+            </div>
+
+            <h3>Problema 5: Aplicación GUI no responde</h3>
+            <div class="warning">
+                <strong>Problema:</strong> La interfaz se congela durante la captura intensiva.
+            </div>
+            <div class="code-block">
+# Solución: Ajustar límites de captura<br>
+# En sniff.py línea ~45<br>
+if len(self.packets) == 1000:  # Cambiar a 500 para procesar más frecuentemente
+            </div>
+
+            <h3>Problema 6: Memoria insuficiente</h3>
+            <div class="warning">
+                <strong>Problema:</strong> Acumulando muchos paquetes en memoria.
+            </div>
+            <div class="code-block">
+# Usar procesamiento CLI con límites:<br>
+python3 -c "from ordenar_paquetes_sin_entorno_grafico import PacketSorter; sorter = PacketSorter(); sorter.load_packets(limit=5000); sorter.sort_by_conversation()"
+            </div>
+        </section>
+
+        <section id="configuracion">
+            <h2>⚙️ Configuración Avanzada</h2>
+
+            <h3>Configuración de MongoDB Personalizada</h3>
+            <div class="code-block">
+# En cualquier script, modificar la inicialización:<br>
+sorter = PacketSorter(<br>
+    mongo_uri="mongodb://usuario:password@localhost:27017",<br>
+    db_name="mi_base_datos"<br>)
+            </div>
+
+            <h3>Ajuste de Lotes de Procesamiento</h3>
+            <div class="code-block">
+# En sniff.py línea ~52:<br>
+BATCH_SIZE = 1000  # Ajustar según capacidad del sistema<br>
+SAVE_INTERVAL_SECONDS = 60  # Forzar guardado periódico
+            </div>
+
+            <h3>Configuración de Captura</h3>
+            <div class="code-block">
+# Filtros opcionales para Scapy:<br>
+FILTERS = {<br>
+    'tcp': 'tcp port 80 or tcp port 443',<br>
+    'udp': 'udp port 53',<br>
+    'icmp': 'icmp'<br>}
+            </div>
+
+            <h3>Personalización de Salida</h3>
+            <div class="code-block">
+# Configurar formatos de timestamp:<br>
+TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M:%S.%f"<br>
+FILENAME_FORMAT = "{timestamp}_capture.pcap"
+            </div>
+
+            <h3>Variables de Entorno</h3>
+            <div class="code-block">
+export MONGODB_URI="mongodb://localhost:27017"<br>
+export NETWORK_DB="network_sniffing"<br>
+export PCAP_DIR="/var/log/pcaps"<br>
+export LOG_LEVEL="INFO"
+            </div>
+        </section>
+    </div>
+
+    <div class="footer">
+        <p>&copy; 2025 Sniff Network Analyzer - Desarrollado por bgonpin</p>
+        <p>Para más información, visite el <a href="https://github.com/bgonpin/sniff" style="color: #3498db;">repositorio en GitHub</a></p>
+    </div>
+
+    <script>
+        // Scroll suave para navegación interna
+        document.addEventListener('DOMContentLoaded', function() {
+            const navLinks = document.querySelectorAll('nav a[href^="#"]');
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        window.scrollTo({
+                            top: target.offsetTop - 70,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+        });
+
+        // Resaltar sección activa en navegación
+        window.addEventListener('scroll', function() {
+            const sections = document.querySelectorAll('section[id]');
+            const navLinks = document.querySelectorAll('nav a[href^="#"]');
+
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop - 75;
+                if (pageYOffset >= sectionTop) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+
+    <style>
+        nav a.active {
+            background-color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+        }
+    </style>
+</body>
+</html>
